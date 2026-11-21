@@ -23,6 +23,7 @@ Or, if executable:
 
 - One window with a 2×3 grid of text boxes (multi-line, with scrollbars)
 - A **Copy** button above each box to copy that box's full contents to the clipboard
+- An **Always on top** checkbox to keep the window above other windows
 - Uses standard window title-bar controls (minimize/close)
 
 ## Saving

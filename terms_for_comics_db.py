@@ -90,6 +90,7 @@ class TermsApp:
         self.last_saved = [""] * BOX_COUNT
         self._autosave_job = None
         self._closing = False
+        self.always_on_top = tk.BooleanVar(master=self.root, value=False)
 
         self._build_ui()
 
@@ -106,14 +107,25 @@ class TermsApp:
         self._schedule_autosave()
 
     def _build_ui(self):
-        # Configure root grid to expand
-        for r in range(GRID_ROWS):
+        # Row 0: controls, Rows 1-2: text boxes
+        self.root.grid_rowconfigure(0, weight=0)
+        for r in range(1, GRID_ROWS + 1):
             self.root.grid_rowconfigure(r, weight=1)
         for c in range(GRID_COLS):
             self.root.grid_columnconfigure(c, weight=1)
 
+        controls = ttk.Frame(self.root, padding=(4, 4, 4, 0))
+        controls.grid(row=0, column=0, columnspan=GRID_COLS, sticky="ew")
+        topmost_check = ttk.Checkbutton(
+            controls,
+            text="Always on top",
+            variable=self.always_on_top,
+            command=self._toggle_always_on_top,
+        )
+        topmost_check.grid(row=0, column=0, sticky="w")
+
         for idx in range(BOX_COUNT):
-            row = idx // GRID_COLS
+            row = (idx // GRID_COLS) + 1
             col = idx % GRID_COLS
             cell = ttk.Frame(self.root, padding=4)
             cell.grid(row=row, column=col, sticky="nsew")
@@ -164,6 +176,13 @@ class TermsApp:
         except tk.TclError:
             # Clipboard unavailable; ignore silently (app remains usable).
             pass
+
+    def _toggle_always_on_top(self):
+        try:
+            self.root.attributes("-topmost", self.always_on_top.get())
+        except tk.TclError:
+            # Some platforms/window managers may not support -topmost.
+            self.always_on_top.set(False)
 
     def _find_initial_writable_dir(self):
         for d in candidate_storage_dirs():
